@@ -1,0 +1,35 @@
+@ -675,4 +675,11 @@ config KEYBOARD_CAP1106
+    To compile this driver as a module, choose M here: the
+    module will be called cap1106.
+ 
++config KEYBOARD_AW9523B
++  tristate "Awinic aw9523b Qwerty keyboard"
++  depends on I2C
++  help
++    Say Y here if you want to use Awinic aw9523b Qwerty
++     keyboard as input device.
++
+ endif
+
+-------------------- kernel/drivers/input/keyboard/Makefile --------------------
+old mode 100644
+new mode 100755
+index 0a33456..921d76f
+@@ -59,3 +59,4 @@ obj-$(CONFIG_KEYBOARD_TEGRA)  += tegra-kbc.o
+ obj-$(CONFIG_KEYBOARD_TWL4030)  += twl4030_keypad.o
+ obj-$(CONFIG_KEYBOARD_XTKBD)  += xtkbd.o
+ obj-$(CONFIG_KEYBOARD_W90P910)  += w90p910_keypad.o
++obj-$(CONFIG_KEYBOARD_AW9523B)  += aw9523b.o
+
++&i2c_8 {
++    awinic@58 {
++        compatible = "awinic,aw9523b";
++        reg = <0x58>;
++        interrupt-parent = <&tlmm>;
++        interrupts = <34 0x2008>;
++        interrupt-names = "kpd_irq";
++        vio-supply = <&pm8994_lvs2>;
++        awinic,reset-gpio = <&tlmm 33 0>;
++        awinic,irq-gpio = <&tlmm 34 0x2008>;
++    };
++};
