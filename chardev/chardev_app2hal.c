@@ -8,10 +8,10 @@
 #include <linux/cdev.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
-#include "chardev.h"
 #include <linux/poll.h>
 #include <linux/device.h>
 #include <linux/mutex.h>
+#include "chardev.h"
 #define CDEV_NAME "apptohal"
 
 static int major=0;        /*设备的主设备号*/
@@ -36,13 +36,13 @@ module_param(major,int,S_IRUGO);    /*将主设备号作为参数传入到模块*/
 /*自定义的字符驱动存储结构体*/
 struct chardev_dev
 {
-	char *data; 					 
-	unsigned long size; 
-	wait_queue_head_t inq; 
+    char *data;                      
+    unsigned long size; 
+    wait_queue_head_t inq; 
 };
 
 static struct chardev_dev *p_chardev;        /*程序用结构体*/
-static struct cdev cdev;					 /*字符设备驱动结构体(内核)*/	
+static struct cdev cdev;                     /*字符设备驱动结构体(内核)*/   
 static struct class *pclass;
 
 
@@ -129,44 +129,44 @@ loff_t *poss:        文件内指针偏移量
 */
 static ssize_t chardev_read(struct file *filp,char __user *buf,size_t size,loff_t *ppos)
 {
-  unsigned long p =  *ppos;
-  unsigned int count = size;
-  int ret = 0;
+    unsigned long p =  *ppos;
+    unsigned int count = size;
+    int ret = 0;
     struct chardev_dev *dev=filp->private_data;    /*获取保存在filp中的字符驱动数据*/
     
-	//mutex_lock(&mutex);
+    //mutex_lock(&mutex);
     if(p>=CHARDEV_SIZE)    /*如果当前指针大于文件内存数*/
         return 0;
     if(count>CHARDEV_SIZE-p)        /*要读取的数量大于剩余的数量*/
         count=CHARDEV_SIZE-p;
-	while (!have_data) /* 没有数据可读，考虑为什么不用if，而用while */
-	{
-	    if (filp->f_flags & O_NONBLOCK)
-	        return -EAGAIN;
+    while (!have_data) /* 没有数据可读，考虑为什么不用if，而用while */
+    {
+        if (filp->f_flags & O_NONBLOCK)
+            return -EAGAIN;
 
-		wait_event_interruptible(dev->inq,have_data);
-	}
+        wait_event_interruptible(dev->inq,have_data);
+    }
 
-	printk("%s read %zd bytes(s) from %ld\n", CDEV_NAME, size, p);
+    printk("%s read %zd bytes(s) from %ld\n", CDEV_NAME, size, p);
 
-	/*读数据到用户空间*/
-	if (copy_to_user(buf, (void*)(dev->data + p), count))
-	{
-		ret =  - EFAULT;
-	}
-	else
-	{
-		*ppos += count;
-		ret = count;
+    /*读数据到用户空间*/
+    if (copy_to_user(buf, (void*)(dev->data + p), count))
+    {
+        ret =  - EFAULT;
+    }
+    else
+    {
+        *ppos += count;
+        ret = count;
 
-		printk("%s read %d bytes(s) from %ld\n",CDEV_NAME, count, p);
-	}
+        printk("%s read %d bytes(s) from %ld\n",CDEV_NAME, count, p);
+    }
 
-	have_data = false; /* 表明不再有数据可读 */
-	/* 唤醒写进程 */
+    have_data = false; /* 表明不再有数据可读 */
+    /* 唤醒写进程 */
 
-	//mutex_unlock(&mutex);
-	return ret;
+    //mutex_unlock(&mutex);
+    return ret;
 }
 
 
@@ -178,33 +178,33 @@ static ssize_t chardev_write(struct file *filp,const char __user *buf,size_t siz
     int ret = 0;
 
     struct chardev_dev *dev=filp->private_data;    /*获取保存在filp中的字符驱动数据*/
-	//mutex_lock(&mutex);
+    //mutex_lock(&mutex);
     if(p>=CHARDEV_SIZE)            /*如果要写入的大小超过了预设的内存大小*/
         return 0;
 
     if(count>CHARDEV_SIZE-p)    /*如果要写入的大小超过了剩余的内存大小,则删掉剩余额数据*/
         count=CHARDEV_SIZE-p;
 
-  printk("%s written %zd bytes(s) from %ld\n", CDEV_NAME,size, p);
+    printk("%s written %zd bytes(s) from %ld\n", CDEV_NAME,size, p);
 
-  /*从用户空间写入数据*/
-  if (copy_from_user(dev->data + p, buf, count))
-    ret =  - EFAULT;
-  else
-  {
-    *ppos += count;
-    ret = count;
-    
-    printk("%s written %d bytes(s) from %ld\n",CDEV_NAME, count, p);
-  }
+    /*从用户空间写入数据*/
+    if (copy_from_user(dev->data + p, buf, count))
+        ret =  - EFAULT;
+    else
+    {
+        *ppos += count;
+        ret = count;
+
+        printk("%s written %d bytes(s) from %ld\n",CDEV_NAME, count, p);
+    }
   
-  have_data = true; /* 有新的数据可读 */
-    
-    /* 唤醒读进程 */
-  wake_up(&(dev->inq));
-  //mutex_unlock(&mutex);
+    have_data = true; /* 有新的数据可读 */
 
-  return ret;
+    /* 唤醒读进程 */
+    wake_up(&(dev->inq));
+    //mutex_unlock(&mutex);
+
+    return ret;
 }
 
 
@@ -214,20 +214,20 @@ static loff_t chardev_llseek(struct file *filp,loff_t offset,int whence)
     loff_t newpos;
 
     switch(whence) {
-      case 0: /* SEEK_SET */
-        newpos = offset;
-        break;
+        case 0: /* SEEK_SET */
+            newpos = offset;
+            break;
 
-      case 1: /* SEEK_CUR */
-        newpos = filp->f_pos + offset;
-        break;
+        case 1: /* SEEK_CUR */
+            newpos = filp->f_pos + offset;
+            break;
 
-      case 2: /* SEEK_END */
-        newpos = CHARDEV_SIZE -1 + offset;
-        break;
+        case 2: /* SEEK_END */
+            newpos = CHARDEV_SIZE -1 + offset;
+            break;
 
-      default: /* can't happen */
-        return -EINVAL;
+        default: /* can't happen */
+            return -EINVAL;
     }
     if ((newpos<0) || (newpos>CHARDEV_SIZE))
         return -EINVAL;
@@ -242,9 +242,12 @@ static unsigned int chardev_poll(struct file *filp, poll_table *wait)
     unsigned int mask = 0;
     
    /*将等待队列添加到poll_table表中 */
-    	poll_wait(filp, &dev->inq,  wait);
-     
-    if (have_data)
+   
+   //if (!have_data)
+      poll_wait(filp, &dev->inq,  wait);
+ 
+    
+    if (have_data)         
         mask |= POLLIN | POLLRDNORM;  /* readable */
 
 
@@ -273,40 +276,40 @@ static const struct file_operations chardev_fops=
 /*模块初始化*/
 static int __init chardev_init(void)
 {
-	int result;
-	int i;
+    int result;
+    int i;
 
 
-	dev_t devno=MKDEV(major,0);
-	printk ("chardev_init enter\n");
-	
-	mutex_init(&mutex);
+    dev_t devno=MKDEV(major,0);
+    printk ("chardev_init enter\n");
+    
+    mutex_init(&mutex);
 
-	if(major)    /*如果主设备号已经预先设置*/
-	{
-	    result=register_chrdev_region(devno,CHARDEV_NR_DEVS,CDEV_NAME);    /*静态分配设备号*/
-	}
-	else
-	{
-	    result=alloc_chrdev_region(&devno,0,CHARDEV_NR_DEVS,CDEV_NAME);    /*动态分配设备号*/
-	    major=MAJOR(devno);        /*获取分配到的主设备号*/
-	}
+    if(major)    /*如果主设备号已经预先设置*/
+    {
+        result=register_chrdev_region(devno,CHARDEV_NR_DEVS,CDEV_NAME);    /*静态分配设备号*/
+    }
+    else
+    {
+        result=alloc_chrdev_region(&devno,0,CHARDEV_NR_DEVS,CDEV_NAME);    /*动态分配设备号*/
+        major=MAJOR(devno);        /*获取分配到的主设备号*/
+    }
 
-	if(result<0)
-	{
-		printk ("register_chrdev_region or  alloc_chrdev_region failed\n");
-	    return result;
-	}
-	
-	printk ("chardev_init major=%d\n",major);
+    if(result<0)
+    {
+        printk ("register_chrdev_region or  alloc_chrdev_region failed\n");
+        return result;
+    }
+    
+    printk ("chardev_init major=%d\n",major);
 
   /*初始化cdev结构*/
-	cdev_init(&cdev, &chardev_fops);
-	cdev.owner = THIS_MODULE;
-	cdev.ops = &chardev_fops;
+    cdev_init(&cdev, &chardev_fops);
+    cdev.owner = THIS_MODULE;
+    cdev.ops = &chardev_fops;
   
   /* 注册字符设备 */
-	cdev_add(&cdev, MKDEV(major, 0), CHARDEV_NR_DEVS);
+    cdev_add(&cdev, MKDEV(major, 0), CHARDEV_NR_DEVS);
   
     /*为驱动分配内核物理内存,大小为4K*/
     p_chardev=kzalloc(CHARDEV_NR_DEVS*sizeof(struct chardev_dev),GFP_KERNEL);
@@ -316,24 +319,24 @@ static int __init chardev_init(void)
         goto fail_malloc;
     }
 
-	memset(p_chardev, 0, sizeof(struct chardev_dev));
-	 
-	 /*为设备分配内存*/
-	 for (i=0; i < CHARDEV_NR_DEVS; i++) 
-	 {
-		   p_chardev[i].size = CHARDEV_SIZE;
-		   p_chardev[i].data = kmalloc(CHARDEV_SIZE, GFP_KERNEL);
-		   memset(p_chardev[i].data, 0, CHARDEV_SIZE);
-	 
-		 /*初始化等待队列*/
-		init_waitqueue_head(&(p_chardev[i].inq));
-		//init_waitqueue_head(&(mem_devp[i].outq));
-	 }
+    memset(p_chardev, 0, sizeof(struct chardev_dev));
+     
+     /*为设备分配内存*/
+    for (i=0; i < CHARDEV_NR_DEVS; i++) 
+    {
+        p_chardev[i].size = CHARDEV_SIZE;
+        p_chardev[i].data = kmalloc(CHARDEV_SIZE, GFP_KERNEL);
+        memset(p_chardev[i].data, 0, CHARDEV_SIZE);
+
+        /*初始化等待队列*/
+        init_waitqueue_head(&(p_chardev[i].inq));
+        //init_waitqueue_head(&(mem_devp[i].outq));
+    }
 
 
-	pclass = class_create(THIS_MODULE, CDEV_NAME);
-	device_create(pclass, NULL, devno,  NULL, CDEV_NAME);
-	printk ("chardev_init success\n");
+    pclass = class_create(THIS_MODULE, CDEV_NAME);
+    device_create(pclass, NULL, devno,  NULL, CDEV_NAME);
+    printk ("chardev_init success\n");
     return 0;
 
     fail_malloc:
@@ -346,10 +349,10 @@ static int __init chardev_init(void)
 static void __exit chardev_exit(void)
 {
     cdev_del(&cdev);    /*从系统中删除掉该字符设备*/
-	device_destroy(pclass, MKDEV(major, 0));                 
+    device_destroy(pclass, MKDEV(major, 0));                 
     unregister_chrdev_region(MKDEV(major,0),1);    /*销毁之前注册的字符设备*/
-	class_destroy(pclass);
-	kfree(p_chardev); /*释放分配的内存*/
+    class_destroy(pclass);
+    kfree(p_chardev); /*释放分配的内存*/
 }
 
 
@@ -357,5 +360,5 @@ module_init(chardev_init);
 module_exit(chardev_exit);
 
 /*模块声明*/
-MODULE_AUTHOR("EDISON REN");
+MODULE_AUTHOR("DANNY FN");
 MODULE_LICENSE("GPL");
