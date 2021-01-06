@@ -1,0 +1,7 @@
+service odmszproxy /system/bin/odmszproxy
+    class main 
+    user root 
+    group radio shell cache inet misc
+    socket odmsz stream 0660 radio shell
+    #oneshot
+    #disabled
