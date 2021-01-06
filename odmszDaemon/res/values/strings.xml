@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">odmszdaemon</string>
+    <string name="device_info">deviceinfo</string>
+    <string name="action_settings">Settings</string>
+    <string name="write_all">Write All</string>
+    <string name="write">Write</string>
+    <string name="imei">IMEI</string>
+    <string name="sn">SN</string>
+    <string name="mac">MAC</string>
+    <string name="brand">Brand</string>
+    <string name="helloworld">Hello world</string>
+    <string name="model">Model</string>
+    <string name="sw_ver">Version</string>
+    <string name="android_ver">AndroidVersion</string>
+    <string name="status">Status:</string>
+    <string name="reboot">reboot</string>
+    <string name="read">Read</string>
+    <string name="read_phone">Read All</string>
+    <string name="imei_lenght_wrong">IMEI Length wrong</string>
+    <string name="mac_lenght_wrong">MAC Length wrong</string>
+    <string name="bt_lenght_wrong">BT Length wrong</string>
+    <string name="sn_lenght_wrong">SN Length wrong</string>
+</resources>
